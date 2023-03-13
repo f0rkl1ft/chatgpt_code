@@ -1,0 +1,22 @@
+import requests
+from datetime import datetime
+
+# Set the CRL URL
+crl_url = "http://cdp.geotrust.com/GeoTrustRSACA2018.crl"
+
+# Send a GET request to the CRL URL
+response = requests.get(crl_url)
+
+# Get the "valid to" time from the CRL
+valid_to = None
+for line in response.text.splitlines():
+    if line.startswith("NextUpdate:"):
+        valid_to_str = line.split(":")[1].strip()
+        valid_to = datetime.strptime(valid_to_str, "%y%m%d%H%M%SZ")
+        break
+
+# Check if the "valid to" time is in the future
+if valid_to and valid_to > datetime.utcnow():
+    print("The certificate revocation list is valid until:", valid_to)
+else:
+    print("The certificate revocation list is not valid.")
